@@ -1236,11 +1236,29 @@ class OpenStack_1_1_NodeDriver(OpenStackNodeDriver):
         :type       ex_availability_zone: ``str``
         """
 
+        """
+        Format for scheduling hints to have node built near/far from current nodes
+        {
+          "os:scheduler_hints":{
+            "public_ip_zone:far":["first uuid", "additional uuid", "additional uuid"]
+          },
+          "server":{
+            ...
+          }
+        }
+        """
+
         server_params = self._create_args_to_params(None, **kwargs)
+
+        if 'ex_scheduler_hints' in kwargs:
+            data = {'os:scheduler_hints': kwargs['ex_scheduler_hints'],
+                    'server': server_params}
+        else:
+            data = {'server': server_params}
 
         resp = self.connection.request("/servers",
                                        method='POST',
-                                       data={'server': server_params})
+                                       data=data)
 
         create_response = resp.object['server']
         server_resp = self.connection.request(
